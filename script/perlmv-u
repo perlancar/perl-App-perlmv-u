@@ -1,0 +1,53 @@
+#!perl
+
+# DATE
+# VERSION
+
+use 5.010;
+use strict;
+use warnings;
+use Perinci::CmdLine::Classic;
+
+my $cmd = Perinci::CmdLine::Classic->new(
+    url => '/App/perlmv/Undoable/perlmv',
+    log => 1,
+    undo => 1,
+);
+$cmd->run;
+
+1;
+# ABSTRACT:
+# PODNAME:
+
+=head1 SYNOPSIS
+
+ # rename some files, but in simulation mode, not really rename the files
+ % perlmv-u --dry-run -e '/(\d+)/; sprintf "file%03d.txt", $1' file*txt
+ % perlmv-u -n        -e '/(\d+)/; sprintf "file%03d.txt", $1' file*txt
+
+ # rename some files, for real
+ % perlmv-u           -e '/(\d+)/; sprintf "file%03d.txt", $1' file*txt
+
+ # oops, made a mistake. undo last action.
+ % perlmv-u --undo
+
+ # redo last action
+ % permv-u --redo
+
+ # show history
+ % perlmv-u --history
+
+ # forget history; past actions can no longer be undone/redone
+ % perlmv-u --clear-history
+
+
+=head1 DESCRIPTION
+
+B<EARLY RELEASE, EXPERIMENTAL.>
+
+This utility is a reimplementation of L<perlmv> with undo feature.
+
+
+=head1 SEE ALSO
+
+L<perlmv> from L<App::perlmv>
