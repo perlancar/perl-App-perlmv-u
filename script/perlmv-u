@@ -6,13 +6,60 @@
 use 5.010;
 use strict;
 use warnings;
-use Perinci::CmdLine::Classic;
+use Perinci::CmdLine::Any;
 
-my $cmd = Perinci::CmdLine::Classic->new(
-    url => '/App/perlmv/Undoable/perlmv',
+my $cmd = Perinci::CmdLine::Any->new(
+    url => '/App/perlmv/u/',
+    subcommands => {
+        mv            => {url => '/App/perlmv/u/perlmv'},
+        undo          => {url => '/App/perlmv/u/undo'},
+        redo          => {url => '/App/perlmv/u/redo'},
+        history       => {url => '/App/perlmv/u/history'},
+        clear_history => {url => '/App/perlmv/u/clear_history'},
+    },
+    default_subcommand => 'mv',
     log => 1,
-    undo => 1,
 );
+$cmd->common_opts->{undo} = {
+    summary => 'Shortcut for --cmd=undo',
+    getopt => 'undo',
+    handler => sub {
+        my ($go, $val, $r) = @_;
+        $r->{subcommand_name} = 'undo';
+        $r->{subcommand_name_from} = '--cmd'; # XXX not exactly accurate
+        $r->{skip_parse_subcommand_argv} = 1;
+    },
+};
+$cmd->common_opts->{redo} = {
+    summary => 'Shortcut for --cmd=redo',
+    getopt => 'redo',
+    handler => sub {
+        my ($go, $val, $r) = @_;
+        $r->{subcommand_name} = 'redo';
+        $r->{subcommand_name_from} = '--cmd'; # XXX not exactly accurate
+        $r->{skip_parse_subcommand_argv} = 1;
+    },
+};
+$cmd->common_opts->{history} = {
+    summary => 'Shortcut for --cmd=history',
+    getopt => 'history',
+    handler => sub {
+        my ($go, $val, $r) = @_;
+        $r->{subcommand_name} = 'history';
+        $r->{subcommand_name_from} = '--cmd'; # XXX not exactly accurate
+        $r->{skip_parse_subcommand_argv} = 1;
+    },
+};
+$cmd->common_opts->{clear_history} = {
+    summary => 'Shortcut for --cmd=clear_history',
+    getopt => 'clear-history',
+    handler => sub {
+        my ($go, $val, $r) = @_;
+        $r->{subcommand_name} = 'clear_history';
+        $r->{subcommand_name_from} = '--cmd'; # XXX not exactly accurate
+        $r->{skip_parse_subcommand_argv} = 1;
+    },
+};
 $cmd->run;
 
 1;
@@ -45,7 +92,9 @@ $cmd->run;
 
 B<EARLY RELEASE, EXPERIMENTAL.>
 
-This utility is a reimplementation of L<perlmv> with undo feature.
+This utility is a reimplementation of L<perlmv> with undo feature. Currently
+unimplemented: scriptlets, mv/cp/symlink/link mode, test compile (-c),
+--parents, etc.
 
 
 =head1 SEE ALSO
