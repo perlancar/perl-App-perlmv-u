@@ -22,29 +22,27 @@ sub _undo_file_path {
 }
 
 sub _read_undo_file {
-    require JSON::PP;
+    require Sereal::Decoder;
     my $path = _undo_file_path();
     if (-e $path) {
-        my $content = do {
-            local $/;
-            open my $fh, "<", $path
-                or die "Can't open undo file '$path' for reading: $!";
-            scalar <$fh>;
-        };
-        return JSON::PP::decode_json($content);
+        local $/;
+        open my $fh, "<", $path
+            or die "perlmv-u: Can't open undo file '$path': $!\n";
+        my $content = <$fh>;
+        return Sereal::Decoder::decode_sereal($content);
     } else {
         return [];
     }
 }
 
 sub _write_undo_file {
-    require JSON::PP;
+    require Sereal::Encoder;
 
     my $path = _undo_file_path();
     open my $fh, ">", $path
-        or die "Can't open undo file '$path' for writing: $!";
-    print $fh JSON::PP::encode_json($_[0]);
-    close $fh or die "Can't write undo file '$path': $!";
+        or die "perlmv-u: Can't open undo file '$path' for writing: $!\n";
+    print $fh Sereal::Encoder::encode_sereal($_[0]);
+    close $fh or die "perlmv-u: Can't write undo file '$path': $!\n";
 }
 
 $SPEC{move_multiple} = {
@@ -135,7 +133,11 @@ sub move_multiple {
             my ($src, $dest) = @$pair;
             log_info("Renaming %s -> %s ...", $src, $dest);
             unless (rename $src, $dest) {
-                return [500, "Can't rename '$src' -> '$dest': $!"] if $!;
+                if ($args{_ignore_errors}) {
+                    warn "Can't rename '$src' -> '$dest': $!, skipped\n" if $!;
+                } else {
+                    return [500, "Can't rename '$src' -> '$dest': $!"] if $!;
+                }
             }
         }
         [200, "OK"];
@@ -252,6 +254,11 @@ sub perlmv {
 $SPEC{undo} = {
     v => 1.1,
     summary => 'Undo last action',
+    args => {
+        ignore_errors => {
+            schema => 'bool*',
+        },
+    },
 };
 sub undo {
     my %args = @_;
@@ -277,7 +284,10 @@ sub undo {
     @$actions == 1 && $actions->[0][0] eq 'move_multiple' or
         return [412, "Can't undo (index=$index, ERR_ID=1)"];
 
-    my $res = move_multiple(%{$actions->[0][1]}, -tx_action=>'fix_state');
+    my $res = move_multiple(
+        %{$actions->[0][1]}, -tx_action=>'fix_state',
+        (_ignore_errors => 1) x !!$args{ignore_errors},
+    );
     return $res unless $res->[0] == 200;
 
     $undo->[$index]{status} = 'undone';
