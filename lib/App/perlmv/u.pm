@@ -215,6 +215,9 @@ sub perlmv {
             return [412, "Can't rename '$file' to '$absnew0': ".
                         "path does not exist"];
         }
+        if ($absnew0 eq $absfile) {
+            next;
+        }
         my $absnew;
         my $i = 0;
         while (1) {
