@@ -29,6 +29,7 @@ sub _read_undo_file {
         open my $fh, "<", $path
             or die "perlmv-u: Can't open undo file '$path': $!\n";
         my $content = <$fh>;
+        close $fh;
         return Sereal::Decoder::decode_sereal($content);
     } else {
         return [];
