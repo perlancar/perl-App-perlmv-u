@@ -308,7 +308,7 @@ sub redo {
 
     my $undo = _read_undo_file();
     my $index;
-    for my $i (reverse 0..$#{$undo}) {
+    for my $i (0..$#{$undo}) {
         if ($undo->[$i]{status} eq 'undone') {
             $index = $i;
             last;
