@@ -207,9 +207,8 @@ sub perlmv {
         {
             my $orig = $file;
             local $_ = $file;
-            my $ret = $compiled_code->();
-            $new = $_ eq $orig && defined $ret ? $ret : $_;
-            $new = $orig unless defined $new;
+            $compiled_code->();
+            $new = $_;
         }
         my $absnew0 = Cwd::abs_path($new);
         if (!defined($absnew0)) {
