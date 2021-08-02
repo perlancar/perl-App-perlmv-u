@@ -2,3 +2,4 @@ App-perlmv-u-*
 .build
 *~
 nytprof*
+.DS_Store
